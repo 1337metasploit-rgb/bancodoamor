@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Banco Luis & Machado{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 2.5rem; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+        Olá, {{ session.user_nome }}! 💖
+    </h1>
+</div>
+
+<div class="saldo-display">
+    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">💰 Seu Saldo Atual</div>
+    <div class="saldo-valor" id="saldo-valor">{{ "%.2f"|format(saldo) }} coins</div>
+    <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 10px;">
+        <p style="font-size: 0.9rem; opacity: 0.9;">
+            🔒 Apenas administradores podem adicionar créditos
+        </p>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem; color: #333;">
+            🚀 Ações Disponíveis
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <a href="{{ url_for('transferir') }}" class="btn">
+                💸 Transferir Coins
+            </a>
+            <button class="btn" onclick="location.reload()" style="background: linear-gradient(45deg, #4ecdc4, #44a08d);">
+                🔄 Atualizar Dados
+            </button>
+            <div style="padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid #ffc107; margin-top: 1rem;">
+                <p style="font-size: 0.9rem; color: #856404; margin: 0;">
+                    💡 <strong>Dica:</strong> Para receber coins, peça para alguém transferir para você ou solicite crédito ao administrador!
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem; color: #333;">
+            📊 Últimas Transações
+        </h3>
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% if transacoes %}
+                {% for transacao in transacoes %}
+                <div class="transacao-item">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 0.3rem;">
+                            {% if transacao.tipo == 'credito_admin' %}
+                                👑 Crédito do Admin
+                            {% elif transacao.tipo == 'credito' %}
+                                💰 Crédito Recebido
+                            {% elif transacao.usuario_origem == session.user_id %}
+                                📤 Enviado para: {{ transacao.destino_nome }}
+                            {% else %}
+                                📥 Recebido de: {{ transacao.origem_nome }}
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666;">
+                            🕒 {{ transacao.data_transacao[:16] }}
+                        </div>
+                        {% if transacao.descricao %}
+                        <div style="font-size: 0.9rem; color: #888; margin-top: 0.2rem;">
+                            💬 {{ transacao.descricao }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="{{ 'valor-positivo' if transacao.usuario_destino == session.user_id else 'valor-negativo' }}">
+                        {{ '+' if transacao.usuario_destino == session.user_id else '-' }}{{ "%.2f"|format(transacao.valor) }} coins
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                    <p>Nenhuma transação ainda</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                        Que tal fazer sua primeira transferência?
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
