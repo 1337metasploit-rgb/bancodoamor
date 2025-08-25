@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Admin - Banco Luis & Machado{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 2.5rem; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+        👑 Painel Administrativo
+    </h1>
+    <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">
+        Bem-vindo, {{ session.user_nome }}!
+    </p>
+</div>
+
+<!-- Estatísticas -->
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-bottom: 2rem;">
+    <div class="card" style="text-align: center; background: linear-gradient(45deg, #667eea, #764ba2); color: white;">
+        <h3 style="margin-bottom: 1rem;">👥 Usuários</h3>
+        <div style="font-size: 2.5rem; font-weight: bold;">{{ stats.total_usuarios }}</div>
+        <p style="opacity: 0.9;">Total de contas</p>
+    </div>
+    <div class="card" style="text-align: center; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white;">
+        <h3 style="margin-bottom: 1rem;">💰 Coins</h3>
+        <div style="font-size: 2.5rem; font-weight: bold;">{{ "%.0f"|format(stats.total_coins) }}</div>
+        <p style="opacity: 0.9;">Total em circulação</p>
+    </div>
+    <div class="card" style="text-align: center; background: linear-gradient(45deg, #4ecdc4, #44a08d); color: white;">
+        <h3 style="margin-bottom: 1rem;">📊 Transações</h3>
+        <div style="font-size: 2.5rem; font-weight: bold;">{{ stats.total_transacoes }}</div>
+        <p style="opacity: 0.9;">Total realizadas</p>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Gerenciar Usuários -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem; color: #333;">👥 Gerenciar Usuários</h3>
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% for usuario in usuarios %}
+            <div class="transacao-item" style="border-bottom: 1px solid #eee; align-items: center;">
+                <div style="flex: 1;">
+                    <div style="font-weight: bold;">{{ usuario.nome }}</div>
+                    <div style="font-size: 0.9rem; color: #666;">{{ usuario.email }}</div>
+                    <div style="font-size: 0.9rem; color: #888;">Cadastrado: {{ usuario.data_criacao[:10] }}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="valor-positivo">{{ "%.2f"|format(usuario.saldo) }} coins</div>
+                    <button onclick="adicionarCreditoUsuario({{ usuario.id }}, '{{ usuario.nome }}')" 
+                            class="btn" style="padding: 8px 12px; font-size: 0.9rem;">
+                        💳 Crédito
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Últimas Transações -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem; color: #333;">📊 Últimas Transações</h3>
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% if transacoes %}
+                {% for transacao in transacoes %}
+                <div class="transacao-item">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 0.3rem;">
+                            {% if transacao.tipo == 'credito_admin' %}
+                                👑 Crédito Admin → {{ transacao.destino_nome }}
+                            {% elif transacao.tipo == 'credito' %}
+                                💰 Crédito → {{ transacao.destino_nome }}
+                            {% elif transacao.tipo == 'transferencia' %}
+                                💸 {{ transacao.origem_nome }} → {{ transacao.destino_nome }}
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666;">
+                            🕒 {{ transacao.data_transacao[:16] }}
+                        </div>
+                        {% if transacao.descricao %}
+                        <div style="font-size: 0.9rem; color: #888; margin-top: 0.2rem;">
+                            💬 {{ transacao.descricao }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="valor-positivo">
+                        {{ "%.2f"|format(transacao.valor) }} coins
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <p>Nenhuma transação ainda</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function adicionarCreditoUsuario(userId, userName) {
+    const valor = prompt(`💰 Quanto crédito adicionar para ${userName}? (em coins)`);
+    if (valor && !isNaN(valor) && parseFloat(valor) > 0) {
+        fetch('/admin/adicionar_credito', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'user_id=' + userId + '&valor=' + encodeURIComponent(valor)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('🎉 ' + data.message);
+                location.reload();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('❌ Erro ao adicionar crédito');
+        });
+    } else if (valor !== null) {
+        alert('⚠️ Por favor, digite um valor válido maior que zero!');
+    }
+}
+</script>
+{% endblock %}
