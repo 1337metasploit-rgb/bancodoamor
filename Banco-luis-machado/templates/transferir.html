@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Transferir - Banco Luis & Machado{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">
+        💸 Transferir Coins
+    </h2>
+    
+    <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 1rem; border-radius: 10px; margin-bottom: 2rem; text-align: center;">
+        <p>🏦 Transfira seus coins de forma segura e instantânea!</p>
+    </div>
+    
+    <form method="POST" onsubmit="return confirmarTransferencia()">
+        <div class="form-group">
+            <label for="email_destino">📧 Email do Destinatário:</label>
+            <input type="email" id="email_destino" name="email_destino" required 
+                   placeholder="email@exemplo.com">
+        </div>
+        <div class="form-group">
+            <label for="valor">💰 Valor (coins):</label>
+            <input type="number" id="valor" name="valor" step="0.01" min="0.01" required 
+                   placeholder="0.00">
+        </div>
+        <div class="form-group">
+            <label for="descricao">💬 Descrição (opcional):</label>
+            <input type="text" id="descricao" name="descricao" 
+                   placeholder="Ex: Pagamento do almoço, Mesada, etc.">
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">
+            🚀 Realizar Transferência
+        </button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('dashboard') }}" style="color: #4ecdc4; text-decoration: none; font-weight: bold;">
+            ← 🏠 Voltar ao Dashboard
+        </a>
+    </div>
+    
+    <div style="margin-top: 2rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid #ffc107;">
+        <h4 style="color: #856404; margin-bottom: 0.5rem;">⚠️ Dicas de Segurança:</h4>
+        <ul style="color: #856404; margin-left: 1rem;">
+            <li>Verifique sempre o email do destinatário</li>
+            <li>Confirme o valor antes de enviar</li>
+            <li>Transferências não podem ser canceladas</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+function confirmarTransferencia() {
+    const email = document.getElementById('email_destino').value;
+    const valor = document.getElementById('valor').value;
+    const descricao = document.getElementById('descricao').value;
+    
+    let mensagem = `🤔 Confirmar transferência?\n\n`;
+    mensagem += `📧 Para: ${email}\n`;
+    mensagem += `💰 Valor: ${valor} coins\n`;
+    if (descricao) {
+        mensagem += `💬 Descrição: ${descricao}\n`;
+    }
+    mensagem += `\n✅ Confirmar esta transferência?`;
+    
+    return confirm(mensagem);
+}
+</script>
+{% endblock %}
